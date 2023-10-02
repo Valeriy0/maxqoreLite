@@ -49,25 +49,25 @@ export const WALLETS = [
     title: 'Trust Wallet',
     subtitle: 'DApp in app',
     connector: metaMask,
-    icon: '/images/nftcollection/wallets/TW.png',
+    icon: '/wallets/TW.png',
   },
   {
     title: 'TokenPocket',
     subtitle: 'DApp in app',
     connector: metaMask,
-    icon: '/images/nftcollection/wallets/TP.png',
+    icon: '/wallets/TP.png',
   },
   {
     title: 'MetaMask',
     subtitle: 'Desktop / DApp in app',
     connector: metaMask,
-    icon: '/images/nftcollection/wallets/MT.png',
+    icon: '/wallets/MT.png',
   },
   {
     title: 'WalletConnect',
     subtitle: 'Any wallet and browser',
     connector: walletConnectV2,
-    icon: '/images/nftcollection/wallets/WC.png',
+    icon: '/wallets/WC.png',
     disabled:
         (UA.getBrowser().name === 'Chrome WebView' || UA.getBrowser().name === 'Chrome') &&
         parseInt(UA?.getBrowser?.()?.major) <= 87,
