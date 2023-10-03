@@ -299,14 +299,14 @@ export const Main = () => {
               } rounded`}
             >
               <span className="absolute top-1.5 left-1.5 text-white-500">{level}</span>
-              {isLoadingLvl ? <img src='/maxqore/icons/puff.svg' className='w-10 h-10' /> : isActive ? (
-                <img src='/maxqore/icons/success_check.svg' className="w-10 h-10" />
+              {isLoadingLvl ? <img src='/icons/puff.svg' className='w-10 h-10' /> : isActive ? (
+                <img src='/icons/success_check.svg' className="w-10 h-10" />
               ) : levelTimerIsOver && someLevelTimerIsChange ? (
                 <div className="text-center text-white">
                   {isNextActivate && <span className="font-semibold">Upgrade</span>}
                   <div className="flex items-center justify-center space-x-1.5">
                     {' '}
-                    <span>{item} </span> <img src='/maxqore/icons/BNB.svg' className="w-3.5 h-3.5" />{' '}
+                    <span>{item} </span> <img src='/icons/BNB.svg' className="w-3.5 h-3.5" />{' '}
                   </div>
                 </div>
               ) : (
@@ -332,7 +332,7 @@ export const Main = () => {
   const mainButton = useMemo(() => {
     if (isCompletedCountdownMaxQore) {
       if (nextLevel !== 16 && nextLevel !== lastTrueActive + 1) {
-        return <img src='/maxqore/icons/puff.svg' className='w-5 h-5' />;
+        return <img src='/icons/puff.svg' className='w-5 h-5' />;
       }
       const nextLevelIsStart = !isBefore(new Date(), new Date(getMaxQoreDateStartToLevel(nextLevel)));
       if (lastTrueActive + 1 === nextLevel && !nextLevelIsStart) {
@@ -368,28 +368,28 @@ export const Main = () => {
     <div className="relative w-full min-h-[100vh] flex flex-col items-center justify-center sm:p-2">
       <img
         className="hidden sm:flex absolute top-4 right-0 w-[35%]   "
-        src="/maxqore/maxQore/invite/main/main-right-mob.svg"
+        src="/maxQore/invite/main/main-right-mob.svg"
         alt=""
       />
       <img
         className="absolute top-0 right-0 sm:top-1/2 w-[20%] sm:rigth-[-100px] sm:hidden  "
-        src="/maxqore/maxQore/invite/main/main-left.svg"
+        src="/maxQore/invite/main/main-left.svg"
         alt=""
       />
       <img
         className="hidden sm:flex absolute bottom-0 left-0 w-[45%]   "
-        src="/maxqore/maxQore/invite/main/main-left-mob.svg"
+        src="/maxQore/invite/main/main-left-mob.svg"
         alt=""
       />
       <img
         className="absolute top-1/3 left-0 w-[20%] sm:top-transparent sm:bottom-0 sm:hidden "
-        src="/maxqore/maxQore/invite/main/main-right.svg"
+        src="/maxQore/invite/main/main-right.svg"
         alt=""
       />
       <div className="flex flex-col items-center max-w-[1168px] w-full sm:space-y-5 sm:h-full z-10">
         <div className="flex flex-col text-center items-center">
           <div className="flex items-center text-5xl sm:text-4xl sm:items-center ">
-            <img className="h-[125px] sm:h-[90px]" src="/maxqore/maxQore/invite/main/maxQoreLogo.png" alt="" />
+            <img className="h-[125px] sm:h-[90px]" src="/maxQore/invite/main/maxQoreLogo.png" alt="" />
           </div>
         </div>
         <div className="flex flex-col text-center items-center space-y-[50px] sm:h-full sm:justify-end sm:w-full pt-[40px]">
