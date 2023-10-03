@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.STAND_NAME }}-meo-landing-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: {{- if .Values.HOST_NAME_PROD }} {{ .Values.HOST_NAME_PROD }}
+          {{- else }} {{ .Values.HOST_NAME }}
+          {{- end }}
+      http:
+        paths:
+        - path: /maxqore(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: {{ include "meo-landing.fullname" . }}
+              port:
+                number: {{ .Values.service.port }}
