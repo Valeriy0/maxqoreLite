@@ -9,6 +9,7 @@ import { parseUnits } from '@ethersproject/units';
 import Countdown from 'react-countdown';
 import { isBefore } from 'date-fns';
 import { MAXQORE_DATE_START, getMaxQoreDateStartToLevel } from "helpers/constants.js";
+import config from 'helpers/config';
 
 const shortenAddress = (address, chars = 4) => {
   return `${address.substring(0, chars + 2)}...${address.substring(42 - chars)}`;
@@ -357,7 +358,10 @@ export const Main = () => {
           </div>
         </div>
         <div className="flex flex-col text-center items-center space-y-[50px] sm:h-full sm:justify-end sm:w-full pt-[40px]">
-          {account && <span className='text-white'>You wallet <span className='font-bold'>{shortenAddress(account)}</span></span>}
+          <div className="flex flex-col space-y-2.5">
+            {config.matrixMaxqore && <span className='text-white'>Maxqore address <span className='font-bold'>{shortenAddress(config.matrixMaxqore)}</span></span>}
+            {account && <span className='text-white'>You wallet <span className='font-bold'>{shortenAddress(account)}</span></span>}
+          </div>
           {account && maxQoreLvls}
           <button
             onClick={() => mainButtonClick(nextLevel)}
