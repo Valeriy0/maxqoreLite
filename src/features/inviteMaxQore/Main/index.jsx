@@ -9,7 +9,6 @@ import { parseUnits } from '@ethersproject/units';
 import Countdown from 'react-countdown';
 import { isBefore } from 'date-fns';
 import { MAXQORE_DATE_START, getMaxQoreDateStartToLevel } from "helpers/constants.js";
-import config from 'helpers/config';
 
 const shortenAddress = (address, chars = 4) => {
   return `${address.substring(0, chars + 2)}...${address.substring(42 - chars)}`;
@@ -113,22 +112,51 @@ export const Main = () => {
     return number.add(onePercent.mul(percent));
   };
 
+  const registration = async () => {
+    let result = {};
+    try {
+    const contract = await getContract(CONTRACT_NAMES.ROUTER);
+            const priceWithCommission = (MAXQORE_PROGRAM_PRICES[1] + 0.003).toFixed(3)
+      
+            let gas = null;
+            try {
+              gas = await contract.estimateGas.maxQoreRegistration({
+                value: toWei(priceWithCommission),
+              });
+            } catch (e) {
+              //
+            }
+
+            result = await contract.maxQoreRegistration({
+              value: toWei(priceWithCommission),
+              gasLimit: parseInt(gas) ? increaseByPercent(gas) : BigNumber.from(2000000),
+            });
+
+      setNextLevel(2);
+
+      return result;
+    } catch (e) {
+      console.log(e);
+      setNextLevel(1);
+    }
+  }
+
   // const registration = async () => {
   //   let result = {};
   //   try {
-  //   const contract = await getContract(CONTRACT_NAMES.ROUTER);
-  //           const priceWithCommission = (MAXQORE_PROGRAM_PRICES[1] + 0.003).toFixed(3)
+  //   const contract = await getContract(CONTRACT_NAMES.MAXQORE);
+  //           const priceWithCommission = MAXQORE_PROGRAM_PRICES[1].toFixed(6)
       
   //           let gas = null;
   //           try {
-  //             gas = await contract.estimateGas.maxQoreRegistration({
+  //             gas = await contract.estimateGas.registrationExt({
   //               value: toWei(priceWithCommission),
   //             });
   //           } catch (e) {
   //             //
   //           }
 
-  //           result = await contract.maxQoreRegistration({
+  //           result = await contract.registrationExt({
   //             value: toWei(priceWithCommission),
   //             gasLimit: parseInt(gas) ? increaseByPercent(gas) : BigNumber.from(2000000),
   //           });
@@ -142,53 +170,58 @@ export const Main = () => {
   //   }
   // }
 
-  const registration = async () => {
+  const upgrade = async (level) => {
+    const price = (MAXQORE_PROGRAM_PRICES[level] + 0.003).toFixed(3);
     let result = {};
-    setNextLevel(2);
     try {
-    const contract = await getContract(CONTRACT_NAMES.MAXQORE);
-            const priceWithCommission = MAXQORE_PROGRAM_PRICES[1].toFixed(6)
-      
-            let gas = null;
-            try {
-              gas = await contract.estimateGas.registrationExt({
-                value: toWei(priceWithCommission),
-              });
-            } catch (e) {
-              //
-            }
+      const routeContract = await getContract(CONTRACT_NAMES.ROUTER);
+      const value = toWei(price);
 
-            result = await contract.registrationExt({
-              value: toWei(priceWithCommission),
-              gasLimit: parseInt(gas) ? increaseByPercent(gas) : BigNumber.from(2000000),
-            });
+      let gas = null;
+      try {
+        gas = await routeContract.estimateGas.maxQoreUpgrades([level], {
+          value,
+        });
+      } catch (e) {
+        //
+      }
 
-   
+      result = await routeContract.maxQoreUpgrades([level], {
+        value,
+        gasLimit: parseInt(gas) ? increaseByPercent(gas) : BigNumber.from(2000000),
+      });
+
+      if (nextLevel < 15) {
+        setNextLevel(prev => prev + 1);
+      } else {
+        setNextLevel(16);
+      }
 
       return result;
     } catch (e) {
       console.log(e);
-      setNextLevel(1);
+      
     }
   }
 
+
   // const upgrade = async (level) => {
-  //   const price = (MAXQORE_PROGRAM_PRICES[level] + 0.003).toFixed(3);
+  //   const price = MAXQORE_PROGRAM_PRICES[level].toFixed(6);
   //   let result = {};
   //   try {
-  //     const routeContract = await getContract(CONTRACT_NAMES.ROUTER);
+  //     const routeContract = await getContract(CONTRACT_NAMES.MAXQORE);
   //     const value = toWei(price);
 
   //     let gas = null;
   //     try {
-  //       gas = await routeContract.estimateGas.maxQoreUpgrades([level], {
+  //       gas = await routeContract.estimateGas.buyNewLevel([level], {
   //         value,
   //       });
   //     } catch (e) {
   //       //
   //     }
 
-  //     result = await routeContract.maxQoreUpgrades([level], {
+  //     result = await routeContract.buyNewLevel([level], {
   //       value,
   //       gasLimit: parseInt(gas) ? increaseByPercent(gas) : BigNumber.from(2000000),
   //     });
@@ -206,42 +239,6 @@ export const Main = () => {
   //   }
   // }
 
-
-  const upgrade = async (level) => {
-    const price = MAXQORE_PROGRAM_PRICES[level].toFixed(6);
-    let result = {};
-    if (nextLevel < 15) {
-      setNextLevel(prev => prev + 1);
-    } else {
-      setNextLevel(16);
-    }
-    try {
-      const routeContract = await getContract(CONTRACT_NAMES.MAXQORE);
-      const value = toWei(price);
-
-      let gas = null;
-      try {
-        gas = await routeContract.estimateGas.buyNewLevel([level], {
-          value,
-        });
-      } catch (e) {
-        //
-      }
-
-      result = await routeContract.buyNewLevel([level], {
-        value,
-        gasLimit: parseInt(gas) ? increaseByPercent(gas) : BigNumber.from(2000000),
-      });
-
-      
-
-      return result;
-    } catch (e) {
-      console.log(e);
-      
-    }
-  }
-
   const renderer = ({ days, hours, minutes, seconds, completed }) => {
     const finalMinutes = minutes < 10 ? '0' + minutes : minutes;
     const finalSeconds = seconds < 10 ? '0' + seconds : seconds;
@@ -253,7 +250,7 @@ export const Main = () => {
           {days} : {hours} : {minutes}
         </span>
       );
-    } else if (days === 0 && hours > 1) {
+    } else if (days === 0 && hours >= 1) {
       return (
           <span>
           {hours} : {finalMinutes} : {finalSeconds}
@@ -271,6 +268,7 @@ export const Main = () => {
   
 
   const mainButtonClick = (level = nextLevel) => {
+    if (isCompletedCountdownMaxQore) {
       if (!account) {
         onOpen();
       } else {
@@ -280,6 +278,7 @@ export const Main = () => {
           upgrade(level);
         }
       }
+    }
   }
 
   const maxQoreLvls = useMemo(() => {
@@ -300,16 +299,28 @@ export const Main = () => {
               } rounded`}
             >
               <span className="absolute top-1.5 left-1.5 text-white-500">{level}</span>
-              {isLoadingLvl ? <img src='/icons/puff.svg' className='w-10 h-10' /> : isActive ? (
-                <img src='/icons/success_check.svg' className="w-10 h-10" />
-              ) : (
+              {isLoadingLvl ? <img src='/maxqore/icons/puff.svg' className='w-10 h-10' /> : isActive ? (
+                <img src='/maxqore/icons/success_check.svg' className="w-10 h-10" />
+              ) : levelTimerIsOver && someLevelTimerIsChange ? (
                 <div className="text-center text-white">
                   {isNextActivate && <span className="font-semibold">Upgrade</span>}
                   <div className="flex items-center justify-center space-x-1.5">
                     {' '}
-                    <span>{item} </span> <img src='/icons/BNB.svg' className="w-3.5 h-3.5" />{' '}
+                    <span>{item} </span> <img src='/maxqore/icons/BNB.svg' className="w-3.5 h-3.5" />{' '}
                   </div>
                 </div>
+              ) : (
+                  <div className="text-center text-white">
+                    <div className="flex items-center justify-center space-x-1.5">
+                      <Countdown
+                          onComplete={() => {
+                            setSomeLevelTimerIsChange(level);
+                          }}
+                          date={getMaxQoreDateStartToLevel(level)}
+                          renderer={renderer}
+                      />
+                    </div>
+                  </div>
               )}
             </div>
           );
@@ -319,6 +330,20 @@ export const Main = () => {
   }, [nextLevel, lastTrueActive, someLevelTimerIsChange])
 
   const mainButton = useMemo(() => {
+    if (isCompletedCountdownMaxQore) {
+      if (nextLevel !== 16 && nextLevel !== lastTrueActive + 1) {
+        return <img src='/maxqore/icons/puff.svg' className='w-5 h-5' />;
+      }
+      const nextLevelIsStart = !isBefore(new Date(), new Date(getMaxQoreDateStartToLevel(nextLevel)));
+      if (lastTrueActive + 1 === nextLevel && !nextLevelIsStart) {
+        return  <Countdown
+            onComplete={() => {
+              setSomeLevelTimerIsChange(nextLevel);
+            }}
+            date={new Date(getMaxQoreDateStartToLevel(nextLevel))}
+            renderer={renderer}
+        />
+      }
       if (!account ) {
         return <span>Connect wallet</span>
       }
@@ -327,43 +352,51 @@ export const Main = () => {
       }
 
       return <span>{nextLevel === 16 ? 'All levels activated' : `buy ${nextLevel} level`}</span>
+    }
+    return (
+      <Countdown
+              onComplete={() => {
+                setIsCompletedCountdownMaxQore(true);
+              }}
+              date={MAXQORE_DATE_START}
+              renderer={renderer}
+            />
+    )
   }, [isCompletedCountdownMaxQore, account, nextLevel, lastTrueActive, someLevelTimerIsChange])
 
   return (
     <div className="relative w-full min-h-[100vh] flex flex-col items-center justify-center sm:p-2">
       <img
         className="hidden sm:flex absolute top-4 right-0 w-[35%]   "
-        src="/maxQore/invite/main/main-right-mob.svg"
+        src="/maxqore/maxQore/invite/main/main-right-mob.svg"
         alt=""
       />
       <img
         className="absolute top-0 right-0 sm:top-1/2 w-[20%] sm:rigth-[-100px] sm:hidden  "
-        src="/maxQore/invite/main/main-left.svg"
+        src="/maxqore/maxQore/invite/main/main-left.svg"
         alt=""
       />
       <img
         className="hidden sm:flex absolute bottom-0 left-0 w-[45%]   "
-        src="/maxQore/invite/main/main-left-mob.svg"
+        src="/maxqore/maxQore/invite/main/main-left-mob.svg"
         alt=""
       />
       <img
         className="absolute top-1/3 left-0 w-[20%] sm:top-transparent sm:bottom-0 sm:hidden "
-        src="/maxQore/invite/main/main-right.svg"
+        src="/maxqore/maxQore/invite/main/main-right.svg"
         alt=""
       />
       <div className="flex flex-col items-center max-w-[1168px] w-full sm:space-y-5 sm:h-full z-10">
         <div className="flex flex-col text-center items-center">
           <div className="flex items-center text-5xl sm:text-4xl sm:items-center ">
-            <img className="h-[125px] sm:h-[90px]" src="/maxQore/invite/main/maxQoreLogo.png" alt="" />
+            <img className="h-[125px] sm:h-[90px]" src="/maxqore/maxQore/invite/main/maxQoreLogo.png" alt="" />
           </div>
         </div>
         <div className="flex flex-col text-center items-center space-y-[50px] sm:h-full sm:justify-end sm:w-full pt-[40px]">
-          <div className="flex flex-col space-y-2.5">
-            {config.matrixMaxqore && <span className='text-white'>Maxqore address <span className='font-bold'>{shortenAddress(config.matrixMaxqore)}</span></span>}
-            {account && <span className='text-white'>You wallet <span className='font-bold'>{shortenAddress(account)}</span></span>}
-          </div>
+          {account && <span className='text-white'>You wallet <span className='font-bold'>{shortenAddress(account)}</span></span>}
           {account && maxQoreLvls}
           <button
+            disabled={nextLevel !== 16 && nextLevel !== lastTrueActive + 1 || nextLevel === 16}
             onClick={() => mainButtonClick(nextLevel)}
             className="flex items-center justify-center font-semibold uppercase px-11 py-5 sm:min-h-[60px] maxQore_main_button rounded-small font-semibold maxQore_main_button_shadow text-[#FFFFFF] text-2xl w-[90%]"
           >
